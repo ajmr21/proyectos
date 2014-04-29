@@ -1,0 +1,61 @@
+<div class="row">
+<!--<div class="bs-example">-->
+	<form class="form-horizontal">
+	    <div class="form-group">
+	        <label for="inputTitulo" class="control-label col-xs-2">Titulo</label>
+	        <div class="col-xs-5">
+	            <input type="text" class="form-control" id="titulo" placeholder="Titulo" ng-model="formData.titulo">
+	        </div>
+	    </div>
+	    <div class="form-group">
+	        <label for="inputCategoria" class="control-label col-xs-2">Categoria</label>
+	        <div class="col-xs-5">
+	            <input type="text" class="form-control" id="categoria" placeholder="Categoria" ng-model="formData.categoria">
+	        </div>
+	    </div>
+		<div class="form-group">
+	        <label for="inputDirector" class="control-label col-xs-2">Director</label>
+	        <div class="col-xs-5">
+	            <input type="text" class="form-control" id="director" placeholder="Director" ng-model="formData.director">
+	        </div>
+	    </div>
+		<div class="form-group">
+	        <label for="inputDescripcion" class="control-label col-xs-2">Descripción</label>
+	        <div class="col-xs-8">
+	            <input type="text" class="form-control" id="descripcion" placeholder="Descripción" ng-model="formData.descripcion">
+	        </div>
+	    </div>
+	    <div class="form-group">
+	        <label for="inputPrecio" class="control-label col-xs-2">Precio</label>
+	        <div class="col-xs-2">
+	            <input type="text" class="form-control" id="precio" placeholder="Precio" ng-model="formData.precio">
+	        </div>
+	    </div>
+	    <div class="form-group">
+	        <label for="inputFormato" class="control-label col-xs-2">Imagen</label>
+	        <div class="col-xs-5">
+	            <input type="text" class="form-control" id="imagen" placeholder="Imagen" ng-model="formData.imagen">
+	        </div>
+	    </div>
+		<div class="form-group">
+	        <label for="inputStock" class="control-label col-xs-2">Stock</label>
+	        <div class="col-xs-2">
+	            <input type="text" class="form-control" id="stock" placeholder="Stock" ng-model="formData.stock">
+	        </div>
+	    </div>
+	    <!-- <div class="form-group">
+	        <div class="col-xs-offset-2 col-xs-5">
+	            <div class="checkbox">
+	                <label><input type="checkbox"> Remember me</label>
+	            </div>
+	        </div>
+	    </div> -->
+	    <div class="form-group">
+	        <div class="col-xs-offset-2 col-xs-5">
+	            <button type="submit" class="btn btn-primary" ng-click="add()">Aceptar</button>
+	        </div>
+	    </div>
+	</form>
+	<div id="resultAction">
+	</div>
+</div>

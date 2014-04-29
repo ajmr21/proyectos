@@ -1,0 +1,10 @@
+<div class="detail">	
+	<a href="#/movie/{{movie._id}}"><img ng-src="{{movie.imagen}}" /></a>
+	<input type="hidden" value="{{movie._id}}"/>
+	<h4>{{movie.titulo}}</h4>			
+	<p>{{movie.categoria}} <span ng-show="movie.director"> - {{movie.director}}</span></p>
+	<h6>{{movie.descripcion}}</h6>
+	<a class="btn btn-sm btn-primary" ng-click="add(movie)" ng-disabled="movie.stock < 1">
+		{{ movie.precio }} Euros
+	</a>
+<div>
