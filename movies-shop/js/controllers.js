@@ -1,15 +1,14 @@
 /* Controllers */
 
-var moviesControllers = angular.module('moviesControllers', ['ngRoute','ng-Shop']);
+var moviesControllers = angular.module('moviesControllers', ['ngRoute','ng-Services']);
 
-moviesControllers.controller("homeController", function($scope, $shop, $http)
+moviesControllers.controller("homeController", function($scope, $services, $http)
 {	
 
 	// Default layout of the app. Clicking the buttons in the toolbar
 	// changes this value.
-
 	$scope.layout = 'grid';
-
+	$scope.showDetail = 'false';
 	/**
 	* @desc - añade x cantidad de un movie al carrito
 	* @return - object - si es nueva inserción devuelve insert, en otro caso update
@@ -26,8 +25,9 @@ moviesControllers.controller("homeController", function($scope, $shop, $http)
 			movieObj.categoria = movie.categoria;
 			movieObj.descripcion = movie.descripcion;
 			movieObj.precio = parseInt(movie.precio);
+			movieObj.stock = parseInt(movie.stock);
 			movieObj.qty = parseInt(movie.total || 1,10);
-			$shop.add(movieObj);
+			$services.add(movieObj);
 		} else {
 			alert("Este producto se encuentra agotado.");
 		}
@@ -38,7 +38,7 @@ moviesControllers.controller("homeController", function($scope, $shop, $http)
 	*/
 	$scope.remove = function(id)
 	{
-		if($shop.remove(id))
+		if($services.remove(id))
 		{
 			alert("Producto eliminado correctamente");
 			return;
@@ -55,7 +55,7 @@ moviesControllers.controller("homeController", function($scope, $shop, $http)
 	*/
 	$scope.destroy = function()
 	{
-		$shop.destroy();
+		$services.destroy();
 	}
 
 	/**
@@ -88,19 +88,37 @@ moviesControllers.controller("homeController", function($scope, $shop, $http)
 	
 	// Cuando se cargue la página, pide del API todos los registros
 	//{"titulo": "titulo", "director": "director", "categoria": "categoria", "precio": 1, "picture": "imgs/otros.jpg"}
-	$http.get('/movies')
+		
+	//TODO: Ver si es la mejor forma de hacerlo porque se recomienda que las llamadas al servidor con $http estén en los servicios
+	//y no en los controladores. En el servicio debemos devolver la promesa porque al ser asincrono no podemos asignar los datos
+	//binding del modelo hasta que no tenemos respuesta.
+	var promise = $services.getMoviesList();	
+	promise.then(function(obj){
+			$scope.moviesTienda = obj.data;
+	});
+	
+	// movido a services.js
+	/*$http.get('/movies')
 		.success(function(data) {
 			$scope.moviesTienda = data;
 			console.log(data)
 		})
 		.error(function(data) {
 			console.log('Error: ' + data);
-		});
+		});*/
 });
 
 
-moviesControllers.controller("insertController", function($scope, $shop, $http)
+moviesControllers.controller("insertController", function($scope, $services, $http)
 {	
+//TODO: Ver si es la mejor forma de hacerlo porque se recomienda que las llamadas al servidor con $http estén en los servicios
+	//y no en los controladores. En el servicio debemos devolver la promesa porque al ser asincrono no podemos asignar los datos
+	//binding del modelo hasta que no tenemos respuesta.
+	var promise = $services.getCategoriesList();	
+	promise.then(function(obj){
+			$scope.categoriesList = obj.data;
+	});
+	
 	/**
 	* @desc - añade x cantidad de un movie al carrito
 	* @return - object - si es nueva inserción devuelve insert, en otro caso update
@@ -111,12 +129,12 @@ moviesControllers.controller("insertController", function($scope, $shop, $http)
 		var movieObj = {};
 		movieObj.titulo = $scope.formData.titulo;		
 		movieObj.director = $scope.formData.director;
-		movieObj.categoria = $scope.formData.categoria;
+		movieObj.categoria = $scope.formData.categoria.category;
 		movieObj.descripcion = $scope.formData.descripcion;
 		movieObj.precio = $scope.formData.precio;			
 		movieObj.imagen = $scope.formData.imagen;
 		movieObj.stock = $scope.formData.stock;
-		//$shop.add(movieObj);
+		//$services.add(movieObj);
 		
 		$http.post('/movie', movieObj)
 					.success(function(data) {
@@ -132,9 +150,9 @@ moviesControllers.controller("insertController", function($scope, $shop, $http)
 	/**
 	* @desc - elimina un movie del carrito por su id
 	*/
-	$scope.remove = function(id)
+	/*$scope.remove = function(id)
 	{
-		if($shop.remove(id))
+		if($services.remove(id))
 		{
 			alert("Producto eliminado correctamente");
 			return;
@@ -144,11 +162,11 @@ moviesControllers.controller("insertController", function($scope, $shop, $http)
 			alert("Ha ocurrido un error eliminando el movie, seguramente porqué no existe");
 			return;
 		}
-	}
+	}*/
 	
 });
 
-moviesControllers.controller("payController", function($scope, $shop, $http)
+moviesControllers.controller("payController", function($scope, $services, $http)
 {	
 	
 	/**
@@ -177,7 +195,7 @@ moviesControllers.controller("payController", function($scope, $shop, $http)
 	*/
 	$scope.remove = function(id)
 	{
-		if($shop.remove(id))
+		if($services.remove(id))
 		{
 			alert("Producto eliminado correctamente");
 			return;
@@ -194,7 +212,15 @@ moviesControllers.controller("payController", function($scope, $shop, $http)
 	*/
 	$scope.destroy = function()
 	{
-		$shop.destroy();
+		$services.destroy();
+	}
+	
+	/**
+	* @desc - redondea el precio que le pasemos con dos decimales
+	*/
+	$scope.roundCurrency = function(total)
+	{
+		return total.toFixed(2);
 	}
 	
 	/**
@@ -202,7 +228,7 @@ moviesControllers.controller("payController", function($scope, $shop, $http)
 	*/
 	$scope.paypalData = function()
 	{
-		$shop.dataPayPal(userDataPayPal());
+		$services.dataPayPal(userDataPayPal());
 	}
 
 	/**
@@ -211,30 +237,56 @@ moviesControllers.controller("payController", function($scope, $shop, $http)
 	*/
 	$scope.payProducts = function()
 	{
-		var movieObj = $shop.refreshStock();
+		var movieObj = $services.refreshStock();
 		
 		//$scope.moviesTienda
 		var i, len;
+		var promise;
 		for (i = 0, len = movieObj.length; i < len; i++) 
 		{
-			$http.put('/movie/stock/'+movieObj[i].id, movieObj[i])
+			promise = $http.put('/movie/stock/'+movieObj[i].id, movieObj[i])
 					.success(function(data) {
 						$scope.formData = {};
 						//$scope.todos = data;
 						console.log(data);
+						if (data.error){
+							alert("Lo sentimos no hay stock de este producto: "+data.titulo);
+						}
+						
 					})
 					.error(function(data) {
 						console.log('Error:' + data);
 					});
+					
+			//chequeamos la promesa que nos devuelve el servidor
+			promise.then(function(obj) {			
+			  $scope.data = obj.data;
+			});
+			
+			promise.catch(function(err) {			
+			  alert("Lo sentimos no hay stock de este producto: "+movieObj.titulo);
+			});
 		}
 	}
 
 });
 
 
-moviesControllers.controller("movieDetailController", function($scope, $shop, $http, $routeParams){
+moviesControllers.controller("movieDetailController", function($scope, $services, $http, $routeParams){
+	$scope.showDetail = 'true';
+
 	$scope.id = $routeParams.id;
 	
+	//TODO: Ver si es la mejor forma de hacerlo porque se recomienda que las llamadas al servidor con $http estén en los servicios
+	//y no en los controladores. En el servicio debemos devolver la promesa porque al ser asincrono no podemos asignar los datos
+	//binding del modelo hasta que no tenemos respuesta.
+	var promise = $services.getMovieDetail($scope.id);	
+	promise.then(function(obj){
+			$scope.movie = obj.data;
+	});
+	
+	// movido a services.js
+	/*
 	$http.get('/movie/'+$scope.id)
 		.success(function(data) {
 			$scope.movie = data;
@@ -243,4 +295,5 @@ moviesControllers.controller("movieDetailController", function($scope, $shop, $h
 		.error(function(data) {
 			console.log('Error: ' + data);
 		});
+		*/
 });

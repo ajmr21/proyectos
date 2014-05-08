@@ -5,12 +5,12 @@
  * @link - http://uno-de-piera.com/carrito-de-compras-angularjs
  */
 
-var shop = angular.module('ng-Shop', []);
+var shop = angular.module('ng-Services', []);
 
 //nuestra factoria se llamará $shop, inyectamos $rootScope
 //devuleve un objeto con toda la funcionalidad que debe tener un carrito
-shop.factory('$shop', ['$rootScope', function ($rootScope,$http)
-{
+shop.factory('$services', ['$rootScope','$http', function ($rootScope,$http)
+{	
 	/**
 	* @var array con el contenido del carrito
 	*/
@@ -42,6 +42,10 @@ shop.factory('$shop', ['$rootScope', function ($rootScope,$http)
 			{
 				throw new Error("El precio debe ser un número entero");
 			}
+			if(this.checkExistsStock(movie,$rootScope.udpShopContent) === false)
+			{
+				throw new Error("No hay más stock de este producto");
+			}
 		},
 		/**
 		* @desc - comprueba si el número pasado es un entero
@@ -63,7 +67,7 @@ shop.factory('$shop', ['$rootScope', function ($rootScope,$http)
 		{
 			try{
 				//comprobamos si el movie cumple los requisitos
-				this.minimRequeriments(movie);
+				this.minimRequeriments(movie);													
 				
 				//si el movie existe le actualizamos la cantidad
 				if(this.checkExistsProduct(movie,$rootScope.udpShopContent) === true)
@@ -83,7 +87,7 @@ shop.factory('$shop', ['$rootScope', function ($rootScope,$http)
 			}
 			catch(error)
 			{
-				alert("Error " + error);
+				alert(error);
 			}
 		},
 		/**
@@ -98,12 +102,36 @@ shop.factory('$shop', ['$rootScope', function ($rootScope,$http)
 		    for (i = 0, len = movies.length; i < len; i++) 
 		    {
 		        if (movies[i].id === movie.id) 
-		        {	   	
+		        {	
+					if ((movies[i].qty + 1) > movies[i].stock){
+						return false
+					}
 		        	movies[i].qty += movie.qty;  
 		            return true;
 		        }
 		    }
 		    return false;
+		},
+		/**
+		* @desc - comprueba si ha añadido más productos que el stock del producto
+		* @param - movie - objecto con los datos del movie a añadir
+		* @param - movies - array con el contenido del carrito
+		* @return - bool
+		*/
+		checkExistsStock: function(movie, movies) 
+		{
+		    var i, len;
+		    for (i = 0, len = movies.length; i < len; i++) 
+		    {
+		        if (movies[i].id === movie.id) 
+		        {	
+					if ((movies[i].qty + 1) > movies[i].stock){
+						return false
+					}		        	 
+		            return true;
+		        }
+		    }
+		    return true;
 		},
 		/**
 		* @desc -elimina un movie completo por su id
@@ -203,6 +231,48 @@ shop.factory('$shop', ['$rootScope', function ($rootScope,$http)
 			//htmlForm += "<a ng-click='payProducts()'>Ir a payPall</a>";
 
 			$(userData.formClass).html("").append(htmlForm);
+		},
+		/**
+		* @desc - obtiene el listado de los registros en BdD
+		* @return - Array
+		*/
+		getMoviesList: function(){			
+			var promise = $http.get('/movies')
+								.success(function(data) {								
+								console.log("Listado "+data);
+								})
+								.error(function(data) {
+									console.log('Error: ' + data);
+								});					
+			return promise;
+		},
+		/**
+		* @desc - obtiene el listado de los registros en BdD
+		* @return - Array
+		*/
+		getMovieDetail: function(movieId){			
+			var promise = $http.get('/movie/'+movieId)
+								.success(function(data) {
+									console.log("Detalle "+data)
+								})
+								.error(function(data) {
+									console.log('Error: ' + data);
+								});					
+			return promise;
+		},
+		/**
+		* @desc - obtiene el listado de las categorias de BdD
+		* @return - Array
+		*/
+		getCategoriesList: function(){			
+			var promise = $http.get('/categories')
+								.success(function(data) {								
+								console.log("Listado "+data);
+								})
+								.error(function(data) {
+									console.log('Error: ' + data);
+								});					
+			return promise;
 		}
 	};
 }]);

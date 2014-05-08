@@ -1,5 +1,5 @@
 //creamos el modulo y le inyectamos el modulo ngRoute y el modulo cart que hemos creado
-var app = angular.module("app", ['ngRoute','ng-Shop','moviesControllers']);
+var app = angular.module("app", ['ngRoute','ng-Services','moviesControllers']);
 
 //las rutas que vamos a utilizar para nuestro ejemplo
 app.config(function($routeProvider)
@@ -15,9 +15,10 @@ app.config(function($routeProvider)
 	.when("/insert", {
 		templateUrl : "insert.html",
 		controller : "insertController"
-	}).when("/movie/:id", {
+	})
+	.when("/movie/:id", {
 		templateUrl : "views/_movie-detail.html",
-		controller : "movieDetailController"
+		controller : "movieDetailController",
 	})
 	.otherwise({ redirectTo : "/" });
 });
@@ -33,4 +34,5 @@ app.filter('range',function(){
 		return input;
 	};
 });
+
 

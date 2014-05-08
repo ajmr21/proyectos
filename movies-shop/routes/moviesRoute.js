@@ -38,6 +38,7 @@ module.exports = function(app) {
 		director:  req.body.director,
 		descripcion:  req.body.descripcion,
 		precio:   req.body.precio,
+		stock:   req.body.stock,
 		imagen:  req.body.imagen  
   	});
 
@@ -86,23 +87,52 @@ module.exports = function(app) {
   	Movie.findById(req.params.id, function(err, movie) {
 		
 		if (movie.stock > 0){
-			movie.stock -= parseInt(req.body.qty);
-			movie.save(function(err) {
-				if(!err) {
-					console.log('Updated');
-				} else {
-					console.log('ERROR: ' + err);
-				}
-  			res.send(movie);
-			});
-		} else {			
+			
+			if ((movie.stock - parseInt(req.body.qty)) < 0) {
+				console.log('No hay tantos productos en stock de este producto: '+movie.titulo);
+				req.body.error="No hay tantos productos en stock de este producto: "+req.body.titulo;
+				res.send(req.body);
+			} else {
+				movie.stock -= parseInt(req.body.qty);
+				movie.save(function(err) {
+					if(!err) {
+						console.log('Updated');
+					} else {
+						console.log('ERROR: ' + err);
+					}
+					res.send(movie);
+				});
+			}							
+		}else {			
 			//throw new Error("Lo sentimos no hay stock de este producto");
 			console.log("Lo sentimos no hay stock de este producto: "+req.body.titulo);
+			
+			req.body.error="Lo sentimos no hay stock de este producto: "+req.body.titulo;
+			
+			res.send(req.body);
+			//return movie.stock;
 		}
 		
   		
   	});
   }
+  
+  
+  /*************************** CATEGORIES *****************************/
+  
+  var Category = require('../models/categories.js');
+  
+  //GET - Return all movies in the DB
+  findAllCategories = function(req, res) {
+  	Category.find(function(err, categories) {
+  		if(!err) {
+        console.log('GET /categories')
+  			res.send(categories);
+  		} else {
+  			console.log('ERROR: ' + err);
+  		}
+  	});
+  };
 
   //Link routes and functions
   app.get('/movies', findAllMovies);
@@ -111,5 +141,7 @@ module.exports = function(app) {
   app.put('/movie/:id', updateMovie);
   app.put('/movie/stock/:id', updateStock);
   app.delete('/movie/:id', deleteMovie);
+  
+  app.get('/categories', findAllCategories);
 
 }
